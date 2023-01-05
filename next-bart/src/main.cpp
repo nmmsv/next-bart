@@ -3,6 +3,7 @@
 #include <HTTPClient.h>
 #include <Arduino_JSON.h>
 #include <LiquidCrystal.h>
+#include <sstream>
 
 #define WIFI_SSID "NeemsWiFi2.4"
 #define WIFI_PASSWORD "HolaSoyDora420"
@@ -32,18 +33,11 @@ void setup()
   // set up the LCD's number of columns and rows:
   lcd.begin(16, 2);
   // Print a message to the LCD.
-  lcd.print("circuitschools.");
+  lcd.print("Rockridge (S):");
 }
 
 void loop()
-{
-  // set the cursor to column 0, line 1
-  // (note: line 1 is the second row, since counting begins with 0):
-  lcd.setCursor(0, 1);
-  // print the number of seconds since reset:
-  lcd.print(millis() / 1000);
-
-  // put your main code here, to run repeatedly:
+{ // put your main code here, to run repeatedly:
   String api_path = "https://api.bart.gov/api/etd.aspx?cmd=etd&orig=ROCK&key=MW9S-E7SL-26DU-VV8V&json=y";
   HTTPClient http;
 
@@ -55,13 +49,27 @@ void loop()
 
     // extract southbound estimated time of departure
     std::vector<int> etds = extract_etd_time(payload, "South");
+    std::ostringstream os;
 
     Serial.print("South: ");
     for (int k = 0; k < etds.size(); k++)
     {
       Serial.print(etds[k]);
-      Serial.print(", ");
+      os << etds[k];
+      if (k != etds.size() - 1)
+      {
+        Serial.print(", ");
+        os << ",";
+      }
     }
+    const std::string tmp = os.str();
+    const char *cstr = tmp.c_str();
+
+    // set the cursor to column 0, line 1
+    // (note: line 1 is the second row, since counting begins with 0):
+    lcd.setCursor(0, 1);
+    // print the number of seconds since reset:
+    lcd.print(cstr);
 
     Serial.println("");
   }

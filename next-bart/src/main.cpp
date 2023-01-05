@@ -40,40 +40,56 @@ void loop()
 { // put your main code here, to run repeatedly:
   String api_path = "https://api.bart.gov/api/etd.aspx?cmd=etd&orig=ROCK&key=MW9S-E7SL-26DU-VV8V&json=y";
   HTTPClient http;
-
-  http.begin(api_path.c_str());
-  int response = http.GET();
-  if (response > 0)
+  if (WiFi.status() != WL_CONNECTED)
   {
-    String payload = http.getString();
-
-    // extract southbound estimated time of departure
-    std::vector<int> etds = extract_etd_time(payload, "South");
-    std::ostringstream os;
-
-    Serial.print("South: ");
-    for (int k = 0; k < etds.size(); k++)
-    {
-      Serial.print(etds[k]);
-      os << etds[k];
-      if (k != etds.size() - 1)
-      {
-        Serial.print(", ");
-        os << ",";
-      }
-    }
-    const std::string tmp = os.str();
-    const char *cstr = tmp.c_str();
-
-    // set the cursor to column 0, line 1
-    // (note: line 1 is the second row, since counting begins with 0):
     lcd.setCursor(0, 1);
-    // print the number of seconds since reset:
-    lcd.print(cstr);
-
-    Serial.println("");
+    lcd.print("DISCONNECTED!");
+    Serial.println("WIFI DISCONNECTED!");
+    delay(30000);
   }
-  delay(10000);
+  else
+  {
+    http.begin(api_path.c_str());
+    int response = http.GET();
+    if (response > 0)
+    {
+      String payload = http.getString();
+
+      // extract southbound estimated time of departure
+      std::vector<int> etds = extract_etd_time(payload, "South");
+      std::ostringstream os;
+
+      Serial.print("South: ");
+      for (int k = 0; k < etds.size(); k++)
+      {
+        Serial.print(etds[k]);
+        os << etds[k];
+        if (k != etds.size() - 1)
+        {
+          Serial.print(", ");
+          os << ",";
+        }
+      }
+      const std::string tmp = os.str();
+      const char *cstr = tmp.c_str();
+
+      // set the cursor to column 0, line 1
+      // (note: line 1 is the second row, since counting begins with 0):
+      lcd.setCursor(0, 1);
+      lcd.print(cstr);
+
+      Serial.println("");
+      delay(10000);
+    }
+    else
+    {
+      lcd.setCursor(0, 1);
+      lcd.print("HTML Code " + (String)response);
+
+      Serial.println("HTML Code " + (String)response);
+      delay(10000);
+    }
+  }
 }
 
 std::vector<int> extract_etd_time(String payload, String direction)

@@ -62,15 +62,19 @@ void loop()
       Serial.print("South: ");
       for (int k = 0; k < etds.size(); k++)
       {
-        Serial.print(etds[k]);
-        os << etds[k];
-        if (k != etds.size() - 1)
+        if (etds[k] < 100 and etds[k] > 0)
         {
-          Serial.print(", ");
-          os << ",";
+          Serial.print(etds[k]);
+          os << etds[k];
+          if (k != etds.size() - 1)
+          {
+            Serial.print(", ");
+            os << ",";
+          }
         }
       }
-      const std::string tmp = os.str();
+      std::string tmp = os.str();
+      tmp.insert(tmp.begin(), 16 - tmp.size(), ' ');
       const char *cstr = tmp.c_str();
 
       // set the cursor to column 0, line 1
